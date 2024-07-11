@@ -25,9 +25,7 @@ Usage
 1. Define Your Tools
 
 First, define your tools using the @Tool decorator. Each tool function should be annotated with type hints.
-
-python
-
+<!-- start:code block -->
 from tool import Tool
 from django.db import models
 
@@ -40,23 +38,20 @@ def example_tool(model: MyModel, value: int) -> str:
     return f"{model.name} is {model.age + value} years old"
 
 2. Initialize the Client
-
 Next, initialize the ToolShedClient with your API key and the list of tools.
-
-python
-
+<!-- start:code block -->
 from toolshedclient import ToolShedClient
 
 api_key = 'your_openai_api_key'
 tools = [example_tool]
 client = ToolShedClient(api_key=api_key, tools=tools)
+<!-- end:code block -->
 
 3. Create and Use Threads
 
 Create threads and user messages, and manage tool calls and outputs.
 
-python
-
+<!-- start:code block -->
 # Create a new thread
 thread_id = client.create_thread()
 
@@ -66,11 +61,7 @@ client.create_user_message(thread_id, "How old will John be in 5 years?", assist
 # Poll for results and handle tool outputs
 result = client.create_and_poll(thread_id)
 print(result)
-
-File Structure
-
-    toolshedclient.py: Contains the ToolShedClient class which extends the OpenAI API client.
-    tool.py: Contains the Tool decorator and ToolObj class for defining and managing tools.
+<!-- end:code block -->
 
 Contributing
 
