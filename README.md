@@ -21,8 +21,8 @@ git clone https://github.com/yourusername/ToolShedClient.git
 cd ToolShedClient
 pip install -r requirements.txt
 ```
-Usage
-1. Define Your Tools
+## Usage
+### 1. Define Your Tools
 
 First, define your tools using the @Tool decorator. Each tool function should be annotated with type hints.
 ```python
@@ -38,7 +38,7 @@ def example_tool(model: MyModel, value: int) -> str:
     return f"{model.name} is {model.age + value} years old"
 ```
 
-2. Initialize the Client
+### 2. Initialize the Client
 
 Next, initialize the ToolShedClient with your API key and the list of tools.
 
@@ -50,7 +50,7 @@ tools = [example_tool]
 client = ToolShedClient(api_key=api_key, tools=tools)
 ```
 
-3. Create and Use Threads
+### 3. Create and Use Threads
 
 Create threads and user messages, and manage tool calls and outputs.
 ```python
@@ -65,6 +65,6 @@ result = client.create_and_poll(thread_id)
 print(result)
 ```
 
-Contributing
+## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request with your changes.
