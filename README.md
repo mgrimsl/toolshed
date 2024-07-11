@@ -20,12 +20,12 @@ To install ToolShedClient, simply clone the repository and install the dependenc
 git clone https://github.com/yourusername/ToolShedClient.git
 cd ToolShedClient
 pip install -r requirements.txt
-
+```
 Usage
 1. Define Your Tools
 
 First, define your tools using the @Tool decorator. Each tool function should be annotated with type hints.
-<!-- start:code block -->
+```python
 from tool import Tool
 from django.db import models
 
@@ -36,22 +36,24 @@ class MyModel(models.Model):
 @Tool(description="This is an example tool")
 def example_tool(model: MyModel, value: int) -> str:
     return f"{model.name} is {model.age + value} years old"
+```
 
 2. Initialize the Client
+
 Next, initialize the ToolShedClient with your API key and the list of tools.
-<!-- start:code block -->
+
+```python
 from toolshedclient import ToolShedClient
 
 api_key = 'your_openai_api_key'
 tools = [example_tool]
 client = ToolShedClient(api_key=api_key, tools=tools)
-<!-- end:code block -->
+```
 
 3. Create and Use Threads
 
 Create threads and user messages, and manage tool calls and outputs.
-
-<!-- start:code block -->
+```python
 # Create a new thread
 thread_id = client.create_thread()
 
@@ -61,7 +63,7 @@ client.create_user_message(thread_id, "How old will John be in 5 years?", assist
 # Poll for results and handle tool outputs
 result = client.create_and_poll(thread_id)
 print(result)
-<!-- end:code block -->
+```
 
 Contributing
 
