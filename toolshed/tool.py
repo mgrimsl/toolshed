@@ -5,6 +5,7 @@ import functools
 import jsonschema
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.core import serializers
 
 class ToolObj:
     def __init__(
@@ -159,16 +160,22 @@ class Tool:
 
     def __call__(self, func):
         
-        self.tools.append(ToolObj(func.__name__, self.description, func))
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs):
             print("wrapper")
-            return func(*args, **kwargs)
-        
+            if inspect.iscoroutinefunction(func) or inspect.isawaitable(func):
+                result = await func(*args, **kwargs)
+            else:
+                result = func(*args, **kwargs)
+            if result == None:
+                result = "Function returned no values"
+            return result
+        self.tools.append(ToolObj(func.__name__, self.description, wrapper))
+
         return wrapper
 
-    def runTools(self, tool_calls):
+    async def run_tools(self, tool_calls):
         tool_outputs = []
         for call in tool_calls:
             tool_call_id = call.id
@@ -186,9 +193,17 @@ class Tool:
                         continue
                     if (t.reset_max_fails_on_success):
                         t._fails=0
+                    if inspect.iscoroutinefunction(t.func) or inspect.isawaitable(t.func):
+                        result = await t.func(**tool_function_arguments)
+                    else:
+                        result = t.func(**tool_function_arguments)
+                    if isinstance(result, models.Model):
+                        result_data = serializers.serialize('json', [result])
+                    else:
+                        result_data = result
                     tool_outputs.append({
                         "tool_call_id": tool_call_id,
-                        "output": json.dumps(t.func(**tool_function_arguments))
+                        "output": json.dumps(result_data)
                     })
         return tool_outputs
 

@@ -1,5 +1,5 @@
 from openai import OpenAI
-from tool import Tool
+from toolshed.tool import Tool
 from typing import Callable
 
 class ToolShedClient(OpenAI):
@@ -16,15 +16,15 @@ class ToolShedClient(OpenAI):
   def create_thread(self, messages=None):
     return self.beta.threads.create(messages=messages).id
   
-  def create_user_message(self, threadId, content, assistant=None):
+  async def create_user_message(self, thread_id, content, assistant=None):
     self.beta.threads.messages.create(
-      thread_id=threadId,
+      thread_id=thread_id,
       role = "user",
       content=content
     )
-    self.create_and_poll(assistant=assistant)
+    await self.create_and_poll(assistant=assistant, thread_id=thread_id)
 
-  def create_and_poll(self, thread_id, assistant=None, add_instructions=None, instructions=None, **kwargs):
+  async def create_and_poll(self, thread_id, assistant=None, add_instructions=None, instructions=None, **kwargs):
     assistant = self.assistant if not assistant else assistant
     instructions = self.instructions if not instructions else instructions
 
@@ -37,25 +37,25 @@ class ToolShedClient(OpenAI):
       tools=self.tools,
       **kwargs)
 
-    return self.handelPoll(thread_id,run)
+    return await self.handel_poll(thread_id,run)
 
-  def handelPoll(self, thread_id, run):
+  async def handel_poll(self, thread_id, run):
     if(run.status == "completed"):
       messages = self.beta.threads.messages.list(thread_id)
       value : str = messages.data[0].content[0].text.value
       return {"thread_id" : thread_id, "message":value}
     elif(run.status=='requires_action'):
       tool_calls = run.required_action.submit_tool_outputs.tool_calls
-      toolOutputs = Tool.runTools(Tool.tools,tool_calls)
-      return self.try_submit_tools_and_poll(toolOutputs,thread_id,run.id)
+      toolOutputs = await Tool.run_tools(Tool.tools,tool_calls)
+      return await self.try_submit_tools_and_poll(toolOutputs,thread_id,run.id)
 
-  def try_submit_tools_and_poll(self, tool_outputs, thread_id, run_id):
+  async def try_submit_tools_and_poll(self, tool_outputs, thread_id, run_id):
     run = self.beta.threads.runs.submit_tool_outputs_and_poll(
     thread_id=thread_id,
     run_id=run_id,
     tool_outputs=tool_outputs,
     )
-    return self.handelPoll(thread_id, run)
+    return await self.handel_poll(thread_id, run)
     
   def getTools(self,tools : list[Callable]):
     results = []
